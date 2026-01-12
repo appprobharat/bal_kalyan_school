@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1079810110770",
+    "project_id": "balkalyan-e9c6d",
+    "storage_bucket": "balkalyan-e9c6d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1079810110770:android:161d4846ad550a0f28132b",
+        "android_client_info": {
+          "package_name": "com.balkalyan.apppro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPwBg4Aq8rkIN9wmpX5_-cPCl9nlOemPw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
