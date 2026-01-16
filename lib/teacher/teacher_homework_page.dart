@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
@@ -30,7 +31,10 @@ class _TeacherHomeworkPageState extends State<TeacherHomeworkPage> {
     setState(() => isLoading = true);
 
     try {
-      final response = await ApiService.post(context, '/teacher/homework');
+      final response = await ApiService.post(
+        context,
+        '/teacher/homework',
+      );
 
       // 🔐 token expired → AuthHelper already logout kara dega
       if (response == null || !mounted) {
@@ -81,65 +85,52 @@ class _TeacherHomeworkPageState extends State<TeacherHomeworkPage> {
   }
 
   // ---------------- FILE DOWNLOAD (IOS + ANDROID SAFE) ----------------
- Future<void> downloadFile(
-  BuildContext context,
-  String attachmentPath,
-) async {
+ Future<void> downloadFile(BuildContext context, String attachmentPath) async {
   try {
-    if (attachmentPath.isEmpty) {
-      throw Exception("Empty attachment");
-    }
-
-    // ✅ URL via ApiService
-    String fileUrl = attachmentPath;
-  if (!fileUrl.startsWith('http')) {
-  fileUrl = '${ApiService.fileBaseUrl}$fileUrl';
-}
-
+    final String fileUrl = attachmentPath.startsWith('http')
+        ? attachmentPath
+        : 'https://s3.ap-south-1.amazonaws.com/'
+            'school.edusathi.in/homeworks/$attachmentPath';
 
     debugPrint("⬇️ Download URL: $fileUrl");
 
-    final bytes =
-        await ApiService.downloadFileBytes(context, fileUrl);
+    final response = await http
+        .get(Uri.parse(fileUrl))
+        .timeout(const Duration(seconds: 30));
 
-    if (bytes == null || bytes.isEmpty) {
+    if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
       throw Exception("Download failed");
     }
 
-    final String fileName =
-        Uri.parse(fileUrl).pathSegments.last;
+    final String fileName = Uri.parse(fileUrl).pathSegments.last;
 
     // ================= ANDROID =================
     if (Platform.isAndroid) {
+      // ✅ REAL Downloads folder (user visible)
       final Directory downloadsDir =
           Directory('/storage/emulated/0/Download');
 
-      final String filePath =
-          '${downloadsDir.path}/$fileName';
-
+      final String filePath = '${downloadsDir.path}/$fileName';
       final File file = File(filePath);
-      await file.writeAsBytes(bytes, flush: true);
+
+      await file.writeAsBytes(response.bodyBytes, flush: true);
 
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("📥 File saved to Downloads folder"),
-        ),
+        const SnackBar(content: Text("📥 File saved to Downloads folder")),
       );
     }
 
     // ================= iOS =================
     if (Platform.isIOS) {
-      final Directory dir =
-          await getApplicationDocumentsDirectory();
-
+      final Directory dir = await getApplicationDocumentsDirectory();
       final String filePath = '${dir.path}/$fileName';
-      final File file = File(filePath);
 
-      await file.writeAsBytes(bytes, flush: true);
+      final File file = File(filePath);
+      await file.writeAsBytes(response.bodyBytes, flush: true);
 
       if (!context.mounted) return;
-      await OpenFile.open(filePath);
+      await OpenFile.open(filePath); // Files app
     }
   } catch (e) {
     debugPrint("❌ Download error: $e");
@@ -160,9 +151,7 @@ class _TeacherHomeworkPageState extends State<TeacherHomeworkPage> {
         foregroundColor: Colors.white,
       ),
       body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary),)
           : homeworks.isEmpty
           ? const Center(child: Text('No homework found.'))
           : ListView.builder(
@@ -248,10 +237,9 @@ class _TeacherHomeworkPageState extends State<TeacherHomeworkPage> {
                                     Icons.download_rounded,
                                     color: AppColors.primary,
                                   ),
-                                onPressed: () {
-  downloadFile(context, attachmentUrl);
-},
-
+                                  onPressed: () {
+                                    downloadFile(context, attachmentUrl);
+                                  },
                                 ),
                             ],
                           ),

@@ -84,9 +84,8 @@ class _HomeworkPageState extends State<HomeworkPage> {
     try {
       // ✅ Safe URL resolve (no hardcode)
       final fullUrl = attachment.startsWith('http')
-    ? attachment
-    : '${ApiService.fileBaseUrl}$attachment';
-
+          ? attachment
+          : ApiService.homeworkAttachment(attachment);
 
       final fileName = fullUrl.split('/').last;
 

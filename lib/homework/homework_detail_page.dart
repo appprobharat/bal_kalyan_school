@@ -39,7 +39,7 @@ class _HomeworkDetailPageState extends State<HomeworkDetailPage> {
       // ✅ URL CENTRALIZED (no hardcode)
       final fullUrl = filePath.startsWith('http')
           ? filePath
-          : '${ApiService.fileBaseUrl}$filePath';
+          : ApiService.homeworkAttachment(filePath);
 
       final fileName = fullUrl.split('/').last;
 

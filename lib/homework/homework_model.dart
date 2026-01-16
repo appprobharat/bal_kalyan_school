@@ -30,13 +30,9 @@ Future<void> downloadFile(BuildContext context, String filePath) async {
   _isDownloading = true;
 
   // ✅ URL now comes from ApiService
-  debugPrint("📦 RAW attachment path: $filePath");
-
   final fullUrl = filePath.startsWith('http')
       ? filePath
-      : '${ApiService.fileBaseUrl}$filePath';
-
-  debugPrint("🌐 FINAL download URL: $fullUrl");
+      : ApiService.homeworkAttachment(filePath);
 
   try {
     final fileName = fullUrl.split('/').last;

@@ -107,7 +107,6 @@ class _PaymentPageState extends State<PaymentPage> {
         final filePath = '${downloadsDir.path}/$fileName';
 
         await dio.download(url, filePath);
-        await OpenFile.open(filePath);
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -121,7 +120,7 @@ class _PaymentPageState extends State<PaymentPage> {
         final filePath = '${dir.path}/$fileName';
 
         await dio.download(url, filePath);
-        await OpenFile.open(filePath);
+
         if (!mounted) return;
         await OpenFile.open(filePath); // Files app
       }

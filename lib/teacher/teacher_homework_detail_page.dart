@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:bal_kalyan_school/api_service.dart';
@@ -24,18 +25,19 @@ class TeacherHomeworkDetailPage extends StatelessWidget {
   // ---------------- DOWNLOAD FILE ----------------
   Future<void> downloadFile(
     BuildContext context,
-    String fileUrl,
+    String url,
     String fileName,
   ) async {
     try {
-      final bytes = await ApiService.downloadFileBytes(context, fileUrl);
+      final response = await http.get(Uri.parse(url));
 
-      if (bytes == null) {
-        throw Exception("Download failed");
+      if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
+        throw Exception("Failed to download file");
       }
 
       // ================= ANDROID =================
       if (Platform.isAndroid) {
+        // ✅ REAL Downloads folder (user visible)
         final Directory downloadsDir = Directory(
           '/storage/emulated/0/Download',
         );
@@ -43,11 +45,11 @@ class TeacherHomeworkDetailPage extends StatelessWidget {
         final String filePath = '${downloadsDir.path}/$fileName';
         final File file = File(filePath);
 
-        await file.writeAsBytes(bytes, flush: true);
+        await file.writeAsBytes(response.bodyBytes, flush: true);
 
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("📥 File saved to Downloads")),
+          const SnackBar(content: Text("📥 File saved to Downloads folder")),
         );
       }
 
@@ -57,10 +59,10 @@ class TeacherHomeworkDetailPage extends StatelessWidget {
         final String filePath = '${dir.path}/$fileName';
 
         final File file = File(filePath);
-        await file.writeAsBytes(bytes, flush: true);
-  await OpenFile.open(filePath);
+        await file.writeAsBytes(response.bodyBytes, flush: true);
+
         if (!context.mounted) return;
-        await OpenFile.open(filePath);
+        await OpenFile.open(filePath); // Files app
       }
     } catch (e) {
       if (!context.mounted) return;
@@ -135,9 +137,11 @@ class TeacherHomeworkDetailPage extends StatelessWidget {
                     onPressed: () {
                       String fileUrl = homework['Attachment'].toString();
 
-                    if (!fileUrl.startsWith('http')) {
-  fileUrl = '${ApiService.fileBaseUrl}$fileUrl';
-}
+                      if (!fileUrl.startsWith('http')) {
+                        fileUrl =
+                            'https://s3.ap-south-1.amazonaws.com/'
+                            'school.edusathi.in/homeworks/$fileUrl';
+                      }
 
                       debugPrint("📎 TEACHER HW DETAIL DOWNLOAD URL: $fileUrl");
 

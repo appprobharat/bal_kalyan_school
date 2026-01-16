@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:bal_kalyan_school/api_service.dart';
 import 'package:bal_kalyan_school/teacher/teacher_homework_detail_page.dart';
 import 'package:bal_kalyan_school/teacher/teacher_homework_page.dart';
+
 
 class TeacherRecentHomeworks extends StatelessWidget {
   final List<Map<String, dynamic>> homeworks;
@@ -89,11 +91,12 @@ class TeacherRecentHomeworks extends StatelessWidget {
                                   return;
                                 }
 
-                                String fileUrl = attachment.toString();
-
-                                if (!fileUrl.startsWith('http')) {
-                                  fileUrl = '${ApiService.fileBaseUrl}$fileUrl';
-                                }
+                                // ✅ Teacher homework FINAL S3 URL
+                                final String fileUrl =
+                                    attachment.toString().startsWith('http')
+                                    ? attachment.toString()
+                                    : 'https://s3.ap-south-1.amazonaws.com/'
+                                          'school.edusathi.in/homeworks/$attachment';
 
                                 debugPrint(
                                   "📎 TEACHER HW DOWNLOAD URL: $fileUrl",
@@ -121,8 +124,8 @@ class TeacherRecentHomeworks extends StatelessWidget {
   }
 
   // ---------------- SAFE FILE DOWNLOAD ----------------
-  Future<void> _downloadFile(BuildContext context, String fileUrl) async {
-    if (fileUrl.isEmpty) {
+  Future<void> _downloadFile(BuildContext context, String url) async {
+    if (url.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Attachment not available")));
@@ -130,47 +133,43 @@ class TeacherRecentHomeworks extends StatelessWidget {
     }
 
     try {
-      debugPrint("⬇️ Downloading: $fileUrl");
+      debugPrint("⬇️ Downloading: $url");
 
-      final bytes = await ApiService.downloadFileBytes(context, fileUrl);
-
-      if (bytes == null || bytes.isEmpty) {
-        throw Exception("Download failed");
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
+        throw Exception("Failed to download file");
       }
 
-      final fileName = Uri.parse(fileUrl).pathSegments.last;
+      final fileName = Uri.parse(url).pathSegments.last;
 
       // ================= ANDROID =================
       if (Platform.isAndroid) {
-        final Directory downloadsDir = Directory(
-          '/storage/emulated/0/Download',
-        );
+        // ✅ Real user-visible Downloads folder
+        final downloadsDir = Directory('/storage/emulated/0/Download');
+        final filePath = '${downloadsDir.path}/$fileName';
 
-        final String filePath = '${downloadsDir.path}/$fileName';
-        final File file = File(filePath);
+        final file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes, flush: true);
 
-        await file.writeAsBytes(bytes, flush: true);
-        await OpenFile.open(filePath);
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("📥 File saved to Downloads")),
+          const SnackBar(content: Text("File saved to Downloads folder")),
         );
       }
 
       // ================= iOS =================
       if (Platform.isIOS) {
-        final Directory dir = await getApplicationDocumentsDirectory();
+        final dir = await getApplicationDocumentsDirectory();
+        final filePath = '${dir.path}/$fileName';
 
-        final String filePath = '${dir.path}/$fileName';
-        final File file = File(filePath);
+        final file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes, flush: true);
 
-        await file.writeAsBytes(bytes, flush: true);
-  await OpenFile.open(filePath);
         if (!context.mounted) return;
-        await OpenFile.open(filePath);
+        await OpenFile.open(filePath); // Files app
       }
     } catch (e) {
-      debugPrint("❌ HW download error: $e");
+      debugPrint("❌ Teacher HW download error: $e");
       if (!context.mounted) return;
       ScaffoldMessenger.of(
         context,
