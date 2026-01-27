@@ -3,9 +3,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:bal_kalyan_school/Notification/notification_service.dart';
 
 import 'firebase_options.dart';
+import 'package:bal_kalyan_school/Notification/notification_service.dart';
 import 'package:bal_kalyan_school/splash_screen.dart';
 import 'package:bal_kalyan_school/login_page.dart';
 import 'package:bal_kalyan_school/dashboard/dashboard_screen.dart';
@@ -13,26 +13,43 @@ import 'package:bal_kalyan_school/teacher/teacher_dashboard_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 /// 🔔 Background notification handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint("🔥 Background Firebase init error: $e");
+  }
 }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // 🔥 Safe Firebase init (non-blocking)
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint("🔥 Firebase init failed: $e");
+  }
 
+  // 🔔 Background messages
   FirebaseMessaging.onBackgroundMessage(
     _firebaseMessagingBackgroundHandler,
   );
-  await NotificationService.initialize();
+
+  // 🔔 Notification service init (safe)
+  try {
+    await NotificationService.initialize();
+  } catch (e) {
+    debugPrint("🔔 Notification init failed: $e");
+  }
+
   runApp(const MyApp());
-  
 }
 
 class MyApp extends StatelessWidget {
@@ -42,7 +59,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: navigatorKey,
-        navigatorObservers: [routeObserver], 
+      navigatorObservers: [routeObserver],
       debugShowCheckedModeBanner: false,
       home: const RootDecider(),
     );
@@ -58,17 +75,21 @@ class RootDecider extends StatefulWidget {
 }
 
 class _RootDeciderState extends State<RootDecider> {
-  Widget _screen = const SplashScreen();
+  late Widget _screen;
+  bool _initialized = false;
 
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   @override
   void initState() {
     super.initState();
+
+    _screen = const SplashScreen();
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    debugPrint("🔔 Foreground message received");
-    NotificationService.display(message);
-  });
+      debugPrint("🔔 Foreground message received");
+      NotificationService.display(message);
+    });
 
     _initApp();
   }
@@ -93,7 +114,6 @@ class _RootDeciderState extends State<RootDecider> {
       if (isLoggedIn && token.isNotEmpty) {
         _screen = _decideDashboard(userType);
       } else {
-        // ❌ Not logged in → GO TO LOGIN
         await _secureStorage.delete(key: 'auth_token');
         await prefs.clear();
         _screen = LoginPage();
@@ -103,7 +123,11 @@ class _RootDeciderState extends State<RootDecider> {
       _screen = LoginPage();
     }
 
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {
+        _initialized = true;
+      });
+    }
   }
 
   Widget _decideDashboard(String userType) {
@@ -119,6 +143,9 @@ class _RootDeciderState extends State<RootDecider> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_initialized) {
+      return const SplashScreen();
+    }
     return _screen;
   }
 }
