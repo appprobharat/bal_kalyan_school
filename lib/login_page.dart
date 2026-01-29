@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -41,53 +42,72 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = '';
     });
 
-    final response = await ApiService.postPublic(
-      "/login",
-      body: {
-        'username': idController.text.trim(),
-        'password': passwordController.text,
-        'type': selectedRole,
-      },
-    );
+    try {
+      final response = await ApiService.postPublic(
+        "/login",
+        body: {
+          'username': idController.text.trim(),
+          'password': passwordController.text,
+          'type': selectedRole,
+        },
+      ).timeout(const Duration(seconds: 15));
 
-    if (response == null) {
+      if (response == null) {
+        setState(() {
+          _errorMessage = "Server not responding";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final data = jsonDecode(response.body);
+      debugPrint("🟢 LOGIN RESPONSE: $data");
+
+      if (data['status'] == true) {
+        await ApiService.saveSession(data);
+
+        // 🔴 STOP LOADER BEFORE ANY NAVIGATION
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+
+        // send token AFTER stopping loader (safe)
+        sendFcmTokenToLaravel();
+
+        if (!mounted) return;
+
+        if (selectedRole == 'Teacher') {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const TeacherDashboardScreen()),
+            (_) => false,
+          );
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const DashboardScreen()),
+            (_) => false,
+          );
+        }
+      } else {
+        setState(() {
+          _errorMessage = data['message'] ?? "Invalid credentials";
+          _isLoading = false;
+        });
+      }
+    } on TimeoutException {
+      // 🔴 INTERNET SLOW / SERVER STUCK
       setState(() {
-        _errorMessage = "Server not responding";
+        _errorMessage = "Connection timeout. Please try again.";
         _isLoading = false;
       });
-      return;
-    }
+    } catch (e) {
+      debugPrint("❌ LOGIN ERROR: $e");
 
-    final data = jsonDecode(response.body);
-    debugPrint("🟢 LOGIN RESPONSE: $data");
-    if (data['status'] == true) {
-      await ApiService.saveSession(data);
-
-      // ✅ ADD THIS
-      await sendFcmTokenToLaravel();
-
-      if (!mounted) return;
-
-      if (selectedRole == 'Teacher') {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const TeacherDashboardScreen()),
-          (_) => false,
-        );
-      } else {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-          (_) => false,
-        );
-      }
-    } else {
       setState(() {
-        _errorMessage = data['message'] ?? "Invalid credentials";
+        _errorMessage = "Something went wrong. Try again.";
+        _isLoading = false;
       });
     }
-
-    setState(() => _isLoading = false);
   }
 
   Future<void> sendFcmTokenToLaravel() async {
@@ -353,10 +373,7 @@ class _LoginPageState extends State<LoginPage> {
                   Wrap(
                     alignment: WrapAlignment.center,
                     children: [
-                      Text(
-                        "Powered by ",
-                        style: TextStyle(fontSize: 12),
-                      ),
+                      Text("Powered by ", style: TextStyle(fontSize: 12)),
                       Text(
                         "TechInnovation App Pvt. Ltd.®",
                         style: TextStyle(
