@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:bal_kalyan_school/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
-import 'package:bal_kalyan_school/api_service.dart';
 import 'package:bal_kalyan_school/homework/homework_detail_page.dart';
 
 class HomeworkPage extends StatefulWidget {
@@ -145,7 +145,9 @@ class _HomeworkPageState extends State<HomeworkPage> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary),)
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : homeworks.isEmpty
           ? const Center(child: Text("No homework available"))
           : ListView.builder(

@@ -9,7 +9,7 @@ import 'login_page.dart';
 class ApiService {
   /// 🔥 CHANGE ONLY HERE
   static const String baseUrl = "https://balkalyan.apppro.in/api";
-static const String fileBaseUrl = "https://balkalyan.apppro.in/";
+  static const String Url = "https://balkalyan.apppro.in";
 
   /// ⏱ Timeout (iOS safe)
   static const Duration timeout = Duration(seconds: 20);
@@ -19,7 +19,10 @@ static const String fileBaseUrl = "https://balkalyan.apppro.in/";
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
     iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
   );
-
+  static Future<Map<String, String>> multipartHeaders() async {
+    final token = await _getToken();
+    return {'Authorization': 'Bearer $token', 'Accept': 'application/json'};
+  }
   // ================= TOKEN =================
 
   static Future<String> _getToken() async {
@@ -191,48 +194,45 @@ static const String fileBaseUrl = "https://balkalyan.apppro.in/";
       await prefs.setString('student_photo', profile['student_photo'] ?? '');
     }
   }
-// ================= FILE DOWNLOAD =================
-static Future<List<int>?> downloadFileBytes(
-  BuildContext context,
-  String fileUrl,
-) async {
-  final token = await _getToken();
 
-  if (token.isEmpty) {
-    await forceLogout(context);
-    return null;
-  }
+  // ================= FILE DOWNLOAD =================
+  static Future<List<int>?> downloadFileBytes(
+    BuildContext context,
+    String fileUrl,
+  ) async {
+    final token = await _getToken();
 
-  try {
-    final response = await http
-        .get(
-          Uri.parse(fileUrl),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Accept': '*/*',
-          },
-        )
-        .timeout(timeout);
-
-    if (response.statusCode == 401) {
+    if (token.isEmpty) {
       await forceLogout(context);
       return null;
     }
 
-    if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
+    try {
+      final response = await http
+          .get(
+            Uri.parse(fileUrl),
+            headers: {'Authorization': 'Bearer $token', 'Accept': '*/*'},
+          )
+          .timeout(timeout);
+
+      if (response.statusCode == 401) {
+        await forceLogout(context);
+        return null;
+      }
+
+      if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
+        return null;
+      }
+
+      return response.bodyBytes;
+    } on TimeoutException {
+      debugPrint("⏱ DOWNLOAD TIMEOUT");
       return null;
     }
-
-    return response.bodyBytes;
-  } on TimeoutException {
-    debugPrint("⏱ DOWNLOAD TIMEOUT");
-    return null;
   }
-}
 
   // ================= ATTACHMENTS =================
-  static const siblingUrl =
-      'https://balkalyan.apppro.in/uploads/no_image.png';
+  static const siblingUrl = 'https://balkalyan.apppro.in/uploads/no_image.png';
   static const String s3Base =
       "https://s3.ap-south-1.amazonaws.com/balkalyan.apppro.in";
 

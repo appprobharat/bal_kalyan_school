@@ -53,8 +53,7 @@ class ViewHomeworksPage extends StatelessWidget {
                       onPressed: () {
                         String fileUrl = hw['Attachment'];
                         if (!fileUrl.startsWith('http')) {
-                          fileUrl =
-                              ApiService.homeworkAttachment(fileUrl);
+                          fileUrl = ApiService.homeworkAttachment(fileUrl);
                         }
                         downloadFile(context, fileUrl);
                       },
