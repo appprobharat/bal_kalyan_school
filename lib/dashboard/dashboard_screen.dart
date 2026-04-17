@@ -468,14 +468,7 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
                           );
                           await fetchDashboardData(context);
                           Navigator.pop(dashboardContext, true);
-                        } else if (finalStatus == 'pending') {
-                          ScaffoldMessenger.of(dashboardContext).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Payment Pending. Check dashboard later.',
-                              ),
-                            ),
-                          );
+                        
                         } else {
                           ScaffoldMessenger.of(dashboardContext).showSnackBar(
                             const SnackBar(
