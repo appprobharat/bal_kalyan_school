@@ -31,7 +31,7 @@ class _SchoolInfoPageState extends State<SchoolInfoPage> {
       final response = await ApiService.post(context, '/school');
 
       if (response == null) {
-        // auto-logout already handled
+    
         if (mounted) setState(() => isLoading = false);
         return;
       }

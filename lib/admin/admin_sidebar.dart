@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bal_kalyan_school/admin/Attendance/emp_attendance.dart';
 import 'package:bal_kalyan_school/admin/Receipt/list_receipt.dart';
 import 'package:bal_kalyan_school/admin/admissions/admission_list.dart';
-// import 'package:bal_kalyan_school/admin/balance_sheet/balance_sheet.dart';
 import 'package:bal_kalyan_school/admin/complaint/list_complaint.dart';
 import 'package:bal_kalyan_school/admin/day%20book/day_book.dart';
 import 'package:bal_kalyan_school/admin/employee/list_employee.dart';
@@ -130,7 +129,7 @@ class _AdminsidebarState extends State<Adminsidebar> {
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 12,
                         ),
                       ),
                       const SizedBox(height: 2),

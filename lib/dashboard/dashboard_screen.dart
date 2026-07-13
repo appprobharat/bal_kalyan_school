@@ -1055,13 +1055,13 @@ class InfoCard extends StatelessWidget {
         ? Colors.orange.shade50
         : Colors.indigo.shade50;
 
-    final String? attachment = item["Attachment"];
-    final String schoolId = item["SchoolId"]?.toString() ?? '';
+     final String? attachment = item["Attachment"];
+
     final bool hasAttachment =
-        attachment != null && attachment.isNotEmpty && schoolId.isNotEmpty;
-    final String folder = isEvent ? 'event' : 'notice';
+        attachment != null && attachment.toString().isNotEmpty;
+
     final String fullAttachmentUrl = hasAttachment
-        ? ApiService.attachmentUrl(schoolId, folder, attachment)
+        ? ApiService.getFullUrl(attachment)
         : '';
 
     debugPrint("📎 NOTICE ATTACHMENT URL: $fullAttachmentUrl");
@@ -1567,6 +1567,7 @@ Widget sidebarTile({
     },
   );
 }
+
 
 class FeePayCard extends StatelessWidget {
   final int dues;

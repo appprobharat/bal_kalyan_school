@@ -1,7 +1,7 @@
 name: bal_kalyan_school
 description: "A new Flutter project."
 publish_to: 'none' 
-version: 1.0.3+3
+version: 1.0.4+1
 
 environment:
   sdk: ^3.8.1
@@ -20,6 +20,7 @@ dependencies:
   open_file: ^3.5.10
   in_app_update: ^4.2.5
   geolocator: ^14.0.2 
+  file_picker: ^8.0.0
 
 
 

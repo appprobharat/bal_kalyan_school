@@ -96,7 +96,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
@@ -112,7 +112,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       /// 🔥 BOTTOM NAV BAR
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        selectedItemColor: Colors.deepPurple,
+        selectedItemColor: AppColors.primary,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
@@ -437,18 +437,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
                   );
                 },
               ),
-              // _menuTile(
-              //   Icons.event_busy,
-              //   "Leave",
-              //   [Colors.lightGreen, Colors.green],
-              //   Colors.green,
-              //   onTap: () {
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(builder: (_) => EmployeeLeave()),
-              //     );
-              //   },
-              // ),
+
               _menuTile(
                 Icons.report_problem,
                 "Complaints",
@@ -504,18 +493,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
                   );
                 },
               ),
-              // _menuTile(
-              //   Icons.account_balance,
-              //   "Balance",
-              //   [Colors.purple, Colors.deepPurple],
-              //   Colors.purple,
-              //   onTap: () {
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(builder: (_) => BalanceSheet()),
-              //     );
-              //   },
-              // ),
+
               _menuTile(
                 Icons.trending_up,
                 "Inc/Exp",
