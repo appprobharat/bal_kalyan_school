@@ -94,7 +94,7 @@ class _EarningExpenseChartState extends State<EarningExpenseChart> {
       double maxValue = maxIncome > maxExpense ? maxIncome : maxExpense;
 
       if (maxValue <= 0) {
-        return 10; 
+        return 10;
       }
 
       return maxValue * 1.4;

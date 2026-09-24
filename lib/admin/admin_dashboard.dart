@@ -36,7 +36,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   int _currentIndex = 0;
   String schoolName = '';
   String schoolLogo = '';
+  // String selectedSession = "2024-25";
 
+  // List<String> sessionList = ["2022-23", "2023-24", "2024-25"];
   @override
   void initState() {
     super.initState();
@@ -96,12 +98,67 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
               ),
             ),
+            // Align(
+            //   alignment: Alignment.topRight,
+            //   child: PopupMenuButton<String>(
+            //     padding: EdgeInsets.zero,
+            //     onSelected: (value) async {
+            //       setState(() => selectedSession = value);
+
+            //       final prefs = await SharedPreferences.getInstance();
+            //       await prefs.setString("selected_session", value);
+
+            //       print("Session: $value");
+            //     },
+            //     itemBuilder: (context) {
+            //       return sessionList.map((session) {
+            //         return PopupMenuItem<String>(
+            //           value: session,
+            //           child: Text(
+            //             session,
+            //             style: const TextStyle(fontSize: 14),
+            //           ),
+            //         );
+            //       }).toList();
+            //     },
+
+            //     child: Container(
+            //       padding: const EdgeInsets.symmetric(
+            //         horizontal: 12,
+            //         vertical: 6,
+            //       ),
+            //       margin: const EdgeInsets.only(right: 8),
+            //       decoration: BoxDecoration(
+            //         color: Colors.white.withOpacity(0.18),
+            //         borderRadius: BorderRadius.circular(8),
+            //       ),
+            //       child: Row(
+            //         children: [
+            //           Text(
+            //             selectedSession,
+            //             style: const TextStyle(
+            //               color: Colors.white,
+            //               fontSize: 13,
+            //               fontWeight: FontWeight.w500,
+            //             ),
+            //           ),
+            //           const SizedBox(width: 2),
+            //           const Icon(
+            //             Icons.arrow_drop_down,
+            //             color: Colors.white,
+            //             size: 20,
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -437,7 +494,18 @@ class _DashboardBodyState extends State<_DashboardBody> {
                   );
                 },
               ),
-
+              // _menuTile(
+              //   Icons.event_busy,
+              //   "Leave",
+              //   [Colors.lightGreen, Colors.green],
+              //   Colors.green,
+              //   onTap: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(builder: (_) => EmployeeLeave()),
+              //     );
+              //   },
+              // ),
               _menuTile(
                 Icons.report_problem,
                 "Complaints",
@@ -493,7 +561,18 @@ class _DashboardBodyState extends State<_DashboardBody> {
                   );
                 },
               ),
-
+              // _menuTile(
+              //   Icons.account_balance,
+              //   "Balance",
+              //   [Colors.purple, Colors.deepPurple],
+              //   Colors.purple,
+              //   onTap: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(builder: (_) => BalanceSheet()),
+              //     );
+              //   },
+              // ),
               _menuTile(
                 Icons.trending_up,
                 "Inc/Exp",

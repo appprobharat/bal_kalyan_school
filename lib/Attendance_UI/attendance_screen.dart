@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:bal_kalyan_school/Attendance_UI/attendance_report_list.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bal_kalyan_school/api_service.dart';
@@ -20,7 +21,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   int _half = 0;
   int _holiday = 0;
   String? _selectedDate;
-
   bool _isLoading = false;
 
   @override
@@ -29,9 +29,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     _fetchAttendance();
   }
 
-  // ====================================================
-  // 🔐 SAFE ATTENDANCE FETCH (iOS + Android)
-  // ====================================================
   Future<void> _fetchAttendance({String? selectedDate}) async {
     if (!mounted) return;
 
@@ -47,7 +44,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         body: {'Date': dateToSend},
       );
 
-      // 🔐 AuthHelper handles 401 + logout
       if (res == null) return;
 
       debugPrint("📥 ATTENDANCE STATUS: ${res.statusCode}");
@@ -69,7 +65,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             for (final item in (data['days'] ?? []))
               item['date'].toString(): item['status'] ?? 0,
           };
-
           _selectedDate = dateToSend;
         });
       } else {
@@ -117,6 +112,71 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 _buildCalendarContainer(year, month, daysInMonth, startWeekday),
                 const SizedBox(height: 10),
                 _buildSummaryBoxes(),
+
+                const SizedBox(height: 12),
+
+                InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AttendanceReportListPage(),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xff2563EB), Color(0xff3B82F6)],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.analytics_outlined,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Attendance Details",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                "View student-wise attendance report",
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -133,8 +193,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       ),
     );
   }
-
-  // ===================== UI (UNCHANGED) =====================
 
   Widget _buildCalendarContainer(
     int year,

@@ -17,8 +17,8 @@ android {
     defaultConfig {
         applicationId = "com.balkalyan.apppro"
         minSdk = flutter.minSdkVersion
-        targetSdk = 35
-        versionCode = 6
+        targetSdk = 36
+        versionCode = 9
         versionName = "2.0.0"
     }
 

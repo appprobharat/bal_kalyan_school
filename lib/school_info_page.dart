@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:bal_kalyan_school/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:bal_kalyan_school/api_service.dart';
 
 class SchoolInfoPage extends StatefulWidget {
   @override
@@ -31,7 +30,7 @@ class _SchoolInfoPageState extends State<SchoolInfoPage> {
       final response = await ApiService.post(context, '/school');
 
       if (response == null) {
-    
+        // auto-logout already handled
         if (mounted) setState(() => isLoading = false);
         return;
       }
@@ -43,7 +42,7 @@ class _SchoolInfoPageState extends State<SchoolInfoPage> {
       }
 
       final data = jsonDecode(response.body);
-
+      debugPrint("📡 RESPONSE STATUS: ${response.body}");
       if (!mounted) return;
 
       setState(() {
@@ -79,7 +78,7 @@ class _SchoolInfoPageState extends State<SchoolInfoPage> {
 
       final normalizedUrl = qrCode.startsWith('http')
           ? qrCode
-          : '${ApiService.Url}/$qrCode';
+          : "${ApiService.Url}/$qrCode";
 
       final response = await http.get(Uri.parse(normalizedUrl));
       if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
@@ -130,7 +129,7 @@ class _SchoolInfoPageState extends State<SchoolInfoPage> {
       return const AssetImage("assets/images/logo.png");
     }
     return NetworkImage(
-      url.startsWith('http') ? url : '${ApiService.Url}/$url',
+      url.startsWith('http') ? url : "${ApiService.Url}/$url",
     );
   }
 
